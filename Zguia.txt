@@ -1,0 +1,211 @@
+* Como instalar bootstrap no angular cli
+  $ npm install --save bootstrap    e colocar no angular.json
+    "styles": [
+      "node_modules/bootstrap/dist/css/bootstrap.min.css",
+      "src/styles.css"
+      ],
+    "scripts": [
+      "node_modules/bootstrap/dist/js/bootstrap.min.js"
+    ]
+  *instalar o Jquery ja que o bootstrap depende dele
+  $ npm install --save jquery
+    "styles": [
+      "node_modules/bootstrap/dist/css/bootstrap.min.css",
+      "src/styles.css"
+      ],
+    "scripts": [
+      "node_modules/jquery/dist/jquery.js",                    <------- colocar  por primeiro
+      "node_modules/bootstrap/dist/js/bootstrap.min.js"
+      ]
+* ------------------------             Rotas de navegação          -------------------------  *
+---OBS: QUE AS ROTAS JA VEM NO COMPONENTE PRINCIPAL MAIS SE NÃO VINHER:
+
+    * Primeiro dentro de app criamos um arquivo modulo responsavel pelas Rotas
+    * app.routing.module.ts e dentro dele:
+    import { NgModule } from '@angular/core';
+    import { Routes, RouterModule } from '@angular/router';
+
+    export const routes:Routes=[
+
+    ];
+    @NgModule({
+      imports:[ RouterModule.forRoot(routes)],//for root garante que o array de rotas seja unico em todo o projeto(padrao singleton)
+      exports:[RouterModule]
+    })
+    export class AppRoutingModule{}
+
+    * Apos isso devemos importar esse arquivo no modulo principal e depois disso é so fazer as rotas la no arquivo;
+  * 1 - Como agente quer que apenas de baixo do cabeçalho seje dinamico entaão so adicionamos no html a tag,
+  depois do cabeçalho:
+  <div class="container-fluid">
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">
+          {{ title }}
+        </a>
+      </div>
+    </div>
+  </nav>
+  <router-outlet></router-outlet>        <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  </div>
+
+* criando o modulo de tarefas
+    * $ng  g m tarefas  e depois registramos no modulo principal;
+
+* criando model
+  * criamos um diretorio comum para acesso de varios componenetes, por convençao o nome desse diretorio
+  é shared. Criamos dentro dele um model de tarefas, o tarefas.model.ts
+
+* criando serviço de tarefas
+  * ng g s tarefas/tarefas
+
+* implementação do serviço , primeiramente importamos o model dentro do serviço;
+
+
+* Criando componente para listar tarefas e acrescentar rotas:
+  $ ng g c tarefas
+  * Dentro do componente crio o tarefas-routing.... e dentro dele faço:
+  import { Routes } from '@angular/router';
+
+  import { TarefasComponent } from './tarefas.component';
+
+  export const TarefasRoutes:Routes = [
+    {
+    path:'tarefas',//atalho para a rota baixo
+    redirectTo:'tarefas/listar'
+    },
+    {
+      path:'tarefas/listar', // Se eu tiver nesse caminho eu  quero que renderize ->
+      component: TarefasComponent // TarefasComponent
+    },
+  ];
+  * Agora precisamos importar ele dentro do router  Principal:
+
+  import { NgModule } from '@angular/core';
+  import { Routes, RouterModule } from '@angular/router';
+
+  import { TarefasRoutes } from './tarefas/tarefas-routing.module';
+  const routes: Routes = [
+    {
+      path:'',
+      redirectTo:'/tarefas/listar',
+      pathMatch:'full'
+    },//3 rota se for '' quero que redirecione /tarefas/listar tambem
+    ...TarefasRoutes
+  ];
+  @NgModule({
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule]
+  })
+
+  export class AppRoutingModule { }
+
+
+* Começando a mecher no componente;
+  * para isso iremos precisar importar 2 modulos do angular o de rota e o de formulario
+  dentro do modulo de tarefas;
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule
+  ],
+  * importo o serviço e mao na massa;
+
+  ** Trabalhando com diretivas do Angular, elas estao presente no modulo FormsModule
+    * Diretiva de loop:
+    + Para cada tarefa contida na lista de tarefas faça:
+     *ngFor="tarefa of tarefas"
+      ...
+    + Se for verdade faça(famoso if):
+    *ngIf="tarefas.lenght==0"
+
+* Criando componente de cadastro de tarefas e registrando as rotas dele:
+  * $ ng g c tarefas/ cadastrar
+  * Primeiro vamos ate o tarefas router declarar o cadastrar e depois adicionar o  path;
+  import { CadastrarComponent } from './cadastrar/cadastrar.component';
+
+  @NgModule({
+    declarations: [
+      TarefasComponent,
+      CadastrarComponent
+    ],
+    imports: [
+      CommonModule,
+      RouterModule,
+      FormsModule
+    ],
+    exports:[
+      TarefasComponent
+    ],
+    providers:[
+      TarefasService
+    ]
+  })
+  export class TarefasModule { }
+
+  * Feito o path, se eu chamar o path no site ja aparece
+  * Em seguida vamos tornar a rota dinamica no html usando uma diretiva de roteamento:
+  * <a [routerLink]="['/tarefas/cadastrar']"  class="btn btn-xs btn-success">
+
+* Utilizando viewChild para permitir ter uma referencia do input do html dentro do nosso componente
+  * utilizamos no componente .ts oviewChild o atributo:
+  @ViewChild('formTarefa') formTarefa: NgForm;
+  tarefa:Tarefa;
+
+  * e no html devemos informar o form de acordo com o viewchild criado;
+
+
+
+  *------------------------------------PROJETO DASHBOARD------------------------------------*
+1 - criar o projeto $ ng new DASHBOARD
+  *Para o projeto funcionar corretamente com o Angular 11, simplesmente adicione a seguinte biblioteca ao projeto para que os observables trabalhem corretamente.
+
+  Na raiz do projeto execute:
+  npm install rxjs-compat --save
+2 - criar o modulo DASHB $ng g m DASHB
+3 - criar o componente DASHB $ ng g c dashb
+4 - criar serviço DASHB $ ng g s dashb/dashb
+5 - Implementado serviço de dados do dashb
+  * primeiro vamos criar um array bidemensional com os meses do ano
+  * vamos usar um padrão Observable para obter os dados etc...
+  * Logo vamos ao obterDados metodo q retorna um observables
+6 - importando api de graficos no projeto -do- developers.google.com/chart
+  * 1 - importar o loader, para isso vamos até o nosso index principal e ja vamos importar la
+    <script type="text/javascript" src="http://www.gstatic.com/charts/loader.js"></script>
+  * Criamos o htm e usamos 6 tipos de graficos
+    <div id="pie_chart"></div>
+    <div id="3d_pie_chart"></div>
+    <div id="donut_chart"></div>
+    <div id="bar_chart"></div>
+    <div id="line_chart"></div>
+    <div id="column_chart"></div>
+  * colocamos o css
+    div {
+      float:left;
+    }
+7 - implementando os graficos dos componentes
+  * vamos trabalhar com o dash.component.ts
+  1 - importo o Serviço de dados
+  2 - injetamos o serviço no construtor
+  3 - armazenamos em um local, criamos a variavel de dados
+  4 - Obtemos dados do nosso service
+
+
+  //To na aula 11
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
